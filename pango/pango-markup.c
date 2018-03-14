@@ -1132,6 +1132,7 @@ span_parse_func     (MarkupData            *md G_GNUC_UNUSED,
   const char *font_features = NULL;
   const char *alpha = NULL;
   const char *background_alpha = NULL;
+  const char *href = NULL;
 
   g_markup_parse_context_get_position (context,
 				       &line_number, &char_number);
@@ -1210,6 +1211,9 @@ span_parse_func     (MarkupData            *md G_GNUC_UNUSED,
 	CHECK_ATTRIBUTE (underline);
 	CHECK_ATTRIBUTE (underline_color);
 	break;
+      case 'h':
+        CHECK_ATTRIBUTE (href);
+        break;
       default:
 	CHECK_ATTRIBUTE (rise);
 	CHECK_ATTRIBUTE (variant);
@@ -1446,6 +1450,11 @@ span_parse_func     (MarkupData            *md G_GNUC_UNUSED,
 	goto error;
 
       add_attribute (tag, pango_attr_underline_color_new (color.red, color.green, color.blue));
+    }
+
+  if (G_UNLIKELY (href))
+    {
+      add_attribute (tag, pango_attr_link_new (href));
     }
 
   if (G_UNLIKELY (gravity))
