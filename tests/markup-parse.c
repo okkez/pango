@@ -107,6 +107,9 @@ print_attr (PangoAttribute *attr, GString *string)
     case PANGO_ATTR_BACKGROUND_ALPHA:
       g_string_append_printf (string,"background-alpha %04x\n", ((PangoAttrInt *)attr)->value);
       break;
+    case PANGO_ATTR_LINK:
+      g_string_append_printf (string,"link %s\n", ((PangoAttrLink *)attr)->uri);
+      break;
     default:
       g_assert_not_reached ();
       break;
