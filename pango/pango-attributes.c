@@ -420,6 +420,30 @@ pango_attr_background_new (guint16 red,
   return pango_attr_color_new (&klass, red, green, blue);
 }
 
+/**
+ * pango_attr_link_new:
+ * @uri: a URI
+ *
+ * Create a new link tag attribute.
+ *
+ * Return value: (transfer full): the newly allocated #PangoAttribute,
+ *               which should be freed with pando_attribute_destroy().
+ */
+PangoAttribute *
+pango_attr_link_new(const gchar *uri)
+{
+  static const PangoAttrClass klass = {
+    PANGO_ATTR_LINK,
+    pango_attr_string_copy,
+    pango_attr_string_destroy,
+    pango_attr_string_equal
+  };
+
+  g_return_val_if_fail (uri != NULL, NULL);
+
+  return pango_attr_string_new (&klass, uri);
+}
+
 static PangoAttribute *
 pango_attr_int_copy (const PangoAttribute *attr)
 {

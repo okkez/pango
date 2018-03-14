@@ -81,6 +81,7 @@ typedef struct _PangoAttrColor    PangoAttrColor;
 typedef struct _PangoAttrFontDesc PangoAttrFontDesc;
 typedef struct _PangoAttrShape    PangoAttrShape;
 typedef struct _PangoAttrFontFeatures PangoAttrFontFeatures;
+typedef struct _PangoAttrLink     PangoAttrLink;
 
 /**
  * PANGO_TYPE_ATTR_LIST:
@@ -179,7 +180,8 @@ typedef enum
   PANGO_ATTR_GRAVITY_HINT,	/* PangoAttrInt */
   PANGO_ATTR_FONT_FEATURES,	/* PangoAttrString */
   PANGO_ATTR_FOREGROUND_ALPHA,	/* PangoAttrInt */
-  PANGO_ATTR_BACKGROUND_ALPHA	/* PangoAttrInt */
+  PANGO_ATTR_BACKGROUND_ALPHA,	/* PangoAttrInt */
+  PANGO_ATTR_LINK		/* PangoAttrLink */
 } PangoAttrType;
 
 /**
@@ -434,6 +436,21 @@ struct _PangoAttrFontFeatures
   gchar *features;
 };
 
+
+/**
+ * PangoAttrLink:
+ * @attr: the commom portion of the attribute
+ * @uri: the URI
+ *
+ * The #PangoAttrLink structure is used to represent attributes that are URI.
+ *
+ */
+struct _PangoAttrLink
+{
+  PangoAttribute attr;
+  gchar *uri;
+};
+
 PANGO_AVAILABLE_IN_ALL
 PangoAttrType         pango_attr_type_register (const gchar        *name);
 PANGO_AVAILABLE_IN_1_22
@@ -519,6 +536,9 @@ PANGO_AVAILABLE_IN_1_38
 PangoAttribute *pango_attr_foreground_alpha_new (guint16 alpha);
 PANGO_AVAILABLE_IN_1_38
 PangoAttribute *pango_attr_background_alpha_new (guint16 alpha);
+
+PANGO_AVAILABLE_IN_1_42
+PangoAttribute *pango_attr_link_new(const gchar *uri);
 
 PANGO_AVAILABLE_IN_ALL
 GType              pango_attr_list_get_type      (void) G_GNUC_CONST;
