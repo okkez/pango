@@ -838,6 +838,38 @@ add_attribute (OpenTag        *ot,
     ot->attrs = g_slist_prepend (ot->attrs, attr);
 }
 
+/* a string compare func that ignores '-' vs '_' differences */
+static gint
+attr_strcmp (gconstpointer pa,
+	     gconstpointer pb)
+{
+  const char *a = pa;
+  const char *b = pb;
+
+  int ca;
+  int cb;
+
+  while (*a && *b)
+    {
+      ca = *a++;
+      cb = *b++;
+
+      if (ca == cb)
+	continue;
+
+      ca = ca == '_' ? '-' : ca;
+      cb = cb == '_' ? '-' : cb;
+
+      if (ca != cb)
+	return cb - ca;
+    }
+
+  ca = *a;
+  cb = *b;
+
+  return cb - ca;
+}
+
 #define CHECK_NO_ATTRS(elem) G_STMT_START {                    \
 	 if (*names != NULL) {                                 \
 	   set_bad_attribute (error, context, (elem), *names); \
@@ -910,38 +942,6 @@ parse_absolute_size (OpenTag               *tag,
     open_tag_set_absolute_font_scale (tag, factor);
 
   return TRUE;
-}
-
-/* a string compare func that ignores '-' vs '_' differences */
-static gint
-attr_strcmp (gconstpointer pa,
-	     gconstpointer pb)
-{
-  const char *a = pa;
-  const char *b = pb;
-
-  int ca;
-  int cb;
-
-  while (*a && *b)
-    {
-      ca = *a++;
-      cb = *b++;
-
-      if (ca == cb)
-	continue;
-
-      ca = ca == '_' ? '-' : ca;
-      cb = cb == '_' ? '-' : cb;
-
-      if (ca != cb)
-	return cb - ca;
-    }
-
-  ca = *a;
-  cb = *b;
-
-  return cb - ca;
 }
 
 static gboolean
