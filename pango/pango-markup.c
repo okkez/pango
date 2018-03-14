@@ -89,6 +89,12 @@ typedef gboolean (*TagParseFunc) (MarkupData            *md,
 				  GMarkupParseContext   *context,
 				  GError               **error);
 
+static gboolean a_parse_func        (MarkupData           *md,
+				     OpenTag              *tag,
+				     const gchar         **names,
+				     const gchar         **values,
+				     GMarkupParseContext  *context,
+				     GError              **error);
 static gboolean b_parse_func        (MarkupData           *md,
 				     OpenTag              *tag,
 				     const gchar         **names,
@@ -333,6 +339,11 @@ start_element_handler  (GMarkupParseContext *context,
 
   switch (*element_name)
     {
+    case 'a':
+      if (strcmp ("a", element_name) == 0)
+        parse_func = a_parse_func;
+      break;
+
     case 'b':
       if (strcmp ("b", element_name) == 0)
 	parse_func = b_parse_func;
@@ -875,6 +886,87 @@ attr_strcmp (gconstpointer pa,
 	   set_bad_attribute (error, context, (elem), *names); \
 	   return FALSE;                                       \
 	 } }G_STMT_END
+
+static gboolean
+a_parse_func        (MarkupData            *md G_GNUC_UNUSED,
+		     OpenTag               *tag,
+		     const gchar          **names,
+		     const gchar          **values G_GNUC_UNUSED,
+		     GMarkupParseContext   *context,
+		     GError               **error)
+{
+  int line_number, char_number;
+  int i;
+
+  const char *href = NULL;
+  const char *underline = NULL;
+  const char *underline_color = NULL;
+
+  g_markup_parse_context_get_position (context,
+				       &line_number, &char_number);
+
+#define CHECK_DUPLICATE(var) G_STMT_START{                              \
+	  if ((var) != NULL) {                                          \
+	    g_set_error (error, G_MARKUP_ERROR,                         \
+			 G_MARKUP_ERROR_INVALID_CONTENT,                \
+			 _("Attribute '%s' occurs twice on <a> tag "    \
+			   "on line %d char %d, may only occur once"),  \
+			 names[i], line_number, char_number);           \
+	    return FALSE;                                               \
+	  }}G_STMT_END
+#define CHECK_ATTRIBUTE2(var, name) \
+	if (attr_strcmp (names[i], (name)) == 0) { \
+	  CHECK_DUPLICATE (var); \
+	  (var) = values[i]; \
+	  found = TRUE; \
+	  break; \
+	}
+#define CHECK_ATTRIBUTE(var) CHECK_ATTRIBUTE2 (var, G_STRINGIFY (var))
+
+  i = 0;
+  while (names[i])
+    {
+      gboolean found = FALSE;
+
+      switch (names[i][0]) {
+      case 'h':
+        CHECK_ATTRIBUTE (href);
+        break;
+      default:
+        // <a> supports href only at this time
+        break;
+      }
+
+      if (!found)
+        {
+	  g_set_error (error, G_MARKUP_ERROR,
+		       G_MARKUP_ERROR_UNKNOWN_ATTRIBUTE,
+		       _("Attribute '%s' is not allowed on the <a> tag "
+			 "on line %d char %d"),
+		       names[i], line_number, char_number);
+	  return FALSE;
+        }
+
+      ++i;
+    }
+
+#undef CHECK_ATTRIBUTE
+#undef CHECK_ATTRIBUTE2
+#undef CHECK_DUPLICATE
+
+  if (G_UNLIKELY (href))
+    {
+      PangoColor color;
+      _pango_color_parse_with_alpha(&color, NULL, "blue");
+
+      add_attribute (tag, pango_attr_link_new (href));
+      add_attribute (tag, pango_attr_foreground_new (color.red, color.green, color.blue));
+      add_attribute (tag, pango_attr_underline_new (PANGO_UNDERLINE_SINGLE));
+      add_attribute (tag, pango_attr_underline_color_new (color.red, color.green, color.blue));
+    }
+
+  return TRUE;
+}
 
 static gboolean
 b_parse_func        (MarkupData            *md G_GNUC_UNUSED,
