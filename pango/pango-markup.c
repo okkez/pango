@@ -1234,6 +1234,10 @@ span_parse_func     (MarkupData            *md G_GNUC_UNUSED,
       ++i;
     }
 
+#undef CHECK_ATTRIBUTE
+#undef CHECK_ATTRIBUTE2
+#undef CHECK_DUPLICATE
+
   /* Parse desc first, then modify it with other font-related attributes. */
   if (G_UNLIKELY (desc))
     {
